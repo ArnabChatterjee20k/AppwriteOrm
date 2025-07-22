@@ -16,9 +16,9 @@ export interface Adapter<M extends Record<string, any>> {
     }
   ): Promise<M[K][]>;
 
-  create<K extends keyof M>(
+  create<K extends keyof M, CreateInput = M[K]>(
     model: K,
-    data: M[K][]
+    data: CreateInput[]
   ): Promise<M[K][]>;
 
   update<K extends keyof M>(

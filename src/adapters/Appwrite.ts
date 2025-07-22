@@ -1,4 +1,4 @@
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases, Models, Query } from 'node-appwrite';
 import { Adapter } from './Adapter';
 import { WhereClause, OrderBy } from '../types';
 
@@ -67,7 +67,7 @@ export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M
     return res.documents as M[K][];
   }
 
-  async create<K extends keyof M>(model: K, data: M[K][]): Promise<M[K][]> {
+async create<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput[]): Promise<M[K][]> {
     const collectionId = this.collections[model as string];
     return Promise.all(
       data.map((entry) =>

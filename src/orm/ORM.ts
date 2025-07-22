@@ -9,7 +9,7 @@ type ModelHandler<T> = {
     skip?: number;
     take?: number;
   }) => Promise<T[]>;
-  create: (data: T[]) => Promise<T[]>;
+  create: <CreateInput = T>(data: CreateInput[]) => Promise<T[]>;
   update: (where: WhereClause<T>, data: Partial<T>) => Promise<T>;
   delete: (where: WhereClause<T>) => Promise<void>;
 };
