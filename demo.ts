@@ -2,13 +2,14 @@ import { Client, Models, Permission, Role, Users } from 'node-appwrite';
 import { AppwriteAdapter } from './src/adapters/Appwrite';
 import { ORM } from './src/orm/ORM';
 import { models } from './Models';
+import 'dotenv/config'
 
 const client = new Client()
-  .setEndpoint('http://localhost:8080/v1')
-  .setProject('687f503d0008a2867da4')
-  .setKey('standard_1b6a4caaadb45eb7ef949fa4f48454be132f9649d9a085155050be7a92c8b8232cc7e28d9b08c4516b006df2ac529e75830011c8152058f2e2d5d8a2985a6e48e97ff3d169cd3154896c8dcb0ae2cdc16f43968264a3d476d95d4e9d91c68f7aa93a228fa06ae98c071763f89d5e7a9cb42264d6b5dde731e8b627383bd52be0');
+  .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+  .setProject(process.env.APPWRITE_PROJECT_ID!)
+  .setKey(process.env.APPWRITE_API_KEY!);
 
-const adapter = new AppwriteAdapter<typeof models>(client, 'auto-generated-db', {
+const adapter = new AppwriteAdapter<typeof models>(client, process.env.DATABASE_ID!, {
   users: 'users',
   products: 'products',
   posts: 'posts',
