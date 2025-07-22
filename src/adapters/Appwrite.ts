@@ -4,12 +4,12 @@ import { WhereClause, OrderBy } from '../types';
 
 export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M> {
   private db: Databases;
-  private collections: Record<string, string>;
+  private collections: Record<keyof M, string>;
 
   constructor(
     client: Client,
     private databaseId: string,
-    collections: Record<string, string>
+    collections: Record<keyof M, string>
   ) {
     this.db = new Databases(client);
     this.collections = collections;
