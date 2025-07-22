@@ -1,4 +1,4 @@
-import { Client, Models, Permission, Role } from 'node-appwrite';
+import { Client, Models, Permission, Role, Users } from 'node-appwrite';
 import { AppwriteAdapter } from './src/adapters/Appwrite';
 import { ORM } from './src/orm/ORM';
 import { models } from './Models';
@@ -73,6 +73,10 @@ async function showcaseUsersCollection() {
     take: 1,
   });
   console.log('Paged users (oldest first, 1 result):', pagedUsers);
+
+  const upserted = await orm.users.upsert({ $id: alice.$id, name: 'Alice changed'})
+  const upsertedAlice = await orm.users.findUnique({$id: alice.$id})
+  console.log({upsertedAlice})
 
   // UPDATE: By $id
   if (alice) {

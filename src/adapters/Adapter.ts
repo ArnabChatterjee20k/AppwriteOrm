@@ -31,6 +31,11 @@ export interface Adapter<M extends Record<string, any>> {
     model: K,
     where: WhereClause<M[K]>
   ): Promise<void>;
+
+  upsert<K extends keyof M, CreateInput = M[K]>(
+    model: K,
+    data: CreateInput
+  ): Promise<M[K]>;
 }
 
 type ModelsMap = {

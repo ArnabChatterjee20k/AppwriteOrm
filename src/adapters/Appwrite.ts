@@ -70,8 +70,8 @@ export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M
 async create<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput[]): Promise<M[K][]> {
     const collectionId = this.collections[model as string];
     return Promise.all(
-      data.map((entry) =>
-        this.db.createDocument(this.databaseId, collectionId, 'unique()', entry as any)
+      data.map((entry: any) =>
+        this.db.createDocument(this.databaseId, collectionId, entry['$id'] ? entry['$id'] : 'unique()', entry)
       )
     ) as Promise<M[K][]>;
   }
@@ -88,5 +88,10 @@ async create<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput[
     if (!existing) throw new Error('Document not found');
     const collectionId = this.collections[model as string];
     await this.db.deleteDocument(this.databaseId, collectionId, (existing as any).$id);
+  }
+
+  async upsert<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput): Promise<M[K]> {
+    const collectionId = this.collections[model as string];
+    return this.db.upsertDocument(this.databaseId, collectionId, (data as any)['$id']? (data as any)['$id'] :'unique()', data as any)
   }
 }

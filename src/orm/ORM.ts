@@ -12,6 +12,7 @@ type ModelHandler<T> = {
   create: <CreateInput = T>(data: CreateInput[]) => Promise<T[]>;
   update: (where: WhereClause<T>, data: Partial<T>) => Promise<T>;
   delete: (where: WhereClause<T>) => Promise<void>;
+  upsert: <CreateInput = T>(data: CreateInput) => Promise<T>;
 };
 
 type ORMWithModels<M extends Record<string, any>> = ORM<M> & {
@@ -39,6 +40,7 @@ export class ORM<M extends Record<string, any>> {
       create: (data) => this.adapter.create(model, data),
       update: (where, data) => this.adapter.update(model, where, data),
       delete: (where) => this.adapter.delete(model, where),
+      upsert: (data) => this.adapter.upsert(model, data),
     };
   }
 }
