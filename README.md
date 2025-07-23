@@ -43,8 +43,19 @@ Prisma style wrapper for `Backend as a Service` platforms to have a good develop
 # Todo
 
 ### Convention
-```
-```
+
+- The ORM expects the models type as a TypeScript generic parameter (for type safety only). You do **not** pass the models object at runtime.
+- At runtime, you only provide a mapping from your model names to collection/table IDs:
+  ```ts
+  const orm = ORM.init<typeof models>(adapter, {
+    users: 'users',
+    products: 'products',
+    posts: 'posts',
+    events: 'events',
+  });
+  ```
+- This keeps your runtime code clean and type-safe, and allows you to flexibly map model names in your code to any Appwrite collection ID (including UUIDs or custom names).
+- All type safety and code completion is powered by the generic type, not by passing the models object at runtime.
 
 ### Checklist
 
@@ -100,14 +111,15 @@ const client = new Client()
   .setProject(process.env.APPWRITE_PROJECT_ID!)
   .setKey(process.env.APPWRITE_API_KEY!);
 
-const adapter = new AppwriteAdapter<typeof models>(client, 'auto-generated-db', {
+const adapter = new AppwriteAdapter<typeof models>(client, 'auto-generated-db');
+
+// Pass the models type as a generic, and only provide the collection mapping at runtime
+const orm = ORM.init<typeof models>(adapter, {
   users: 'users',
   products: 'products',
   posts: 'posts',
   events: 'events',
 });
-
-const orm = ORM.init(adapter, models);
 
 async function showcaseUsersCollection() {
   // CREATE: Single and Multiple
@@ -126,5 +138,3 @@ async function showcaseUsersCollection() {
 
 showcaseUsersCollection().catch(console.error);
 ```
-
-See `demo.ts` for a full example including all CRUD operations and advanced queries.
