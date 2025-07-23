@@ -20,27 +20,31 @@ type ORMWithModels<M extends Record<string, any>> = ORM<M> & {
 };
 
 export class ORM<M extends Record<string, any>> {
-  constructor(
+  private collectionIds: Record<keyof M, string>;
+
+  private constructor(
     private adapter: Adapter<M>,
-    private models: M
+    collectionIds: Record<keyof M, string>
   ) {
-    for (const modelKey of Object.keys(models) as Array<keyof M>) {
+    this.collectionIds = collectionIds;
+    for (const modelKey of Object.keys(collectionIds) as Array<keyof M>) {
       (this as any)[modelKey] = this.createModelHandler(modelKey);
     }
   }
-  // as we can't directly use dynamic keys as ts doesn't support "dynamic property injection" on classes with type inference
-  static init<M extends Record<string, any>>(adapter: Adapter<M>, models: M): ORMWithModels<M> {
-    return new ORM(adapter, models) as ORMWithModels<M>;
+
+  static init<M extends Record<string, any>>(adapter: Adapter<M>, collectionIds: Record<keyof M, string>): ORMWithModels<M> {
+    return new ORM(adapter, collectionIds) as ORMWithModels<M>;
   }
 
   private createModelHandler<K extends keyof M>(model: K): ModelHandler<M[K]> {
+    const collectionId = this.collectionIds[model];
     return {
-      findUnique: (where) => this.adapter.findUnique(model, where),
-      findMany: (opts) => this.adapter.findMany(model, opts),
-      create: (data) => this.adapter.create(model, data),
-      update: (where, data) => this.adapter.update(model, where, data),
-      delete: (where) => this.adapter.delete(model, where),
-      upsert: (data) => this.adapter.upsert(model, data),
+      findUnique: (where) => this.adapter.findUnique(collectionId, where),
+      findMany: (opts) => this.adapter.findMany(collectionId, opts),
+      create: (data) => this.adapter.create(collectionId, data),
+      update: (where, data) => this.adapter.update(collectionId, where, data),
+      delete: (where) => this.adapter.delete(collectionId, where),
+      upsert: (data) => this.adapter.upsert(collectionId, data),
     };
   }
 }

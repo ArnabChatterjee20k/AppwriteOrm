@@ -9,15 +9,15 @@ const client = new Client()
   .setProject(process.env.APPWRITE_PROJECT_ID!)
   .setKey(process.env.APPWRITE_API_KEY!);
 
-const adapter = new AppwriteAdapter<typeof models>(client, process.env.DATABASE_ID!, {
+const adapter = new AppwriteAdapter<typeof models>(client, process.env.DATABASE_ID!);
+
+
+const orm = ORM.init<typeof models>(adapter, {
   users: 'users',
   products: 'products',
   posts: 'posts',
   events: 'events',
 });
-
-
-const orm = ORM.init(adapter, models);
 
 async function showcaseUsersCollection() {
   // CREATE: Single and Multiple

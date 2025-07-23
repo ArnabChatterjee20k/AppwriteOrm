@@ -1,41 +1,41 @@
 import { WhereClause, OrderBy } from '../types';
 
 export interface Adapter<M extends Record<string, any>> {
-  findUnique<K extends keyof M>(
-    model: K,
-    where: WhereClause<M[K]>
-  ): Promise<M[K] | null>;
+  findUnique<T = any>(
+    collectionId: string,
+    where: WhereClause<T>
+  ): Promise<T | null>;
 
-  findMany<K extends keyof M>(
-    model: K,
+  findMany<T = any>(
+    collectionId: string,
     opts?: {
-      where?: WhereClause<M[K]>;
-      orderBy?: OrderBy<M[K]>;
+      where?: WhereClause<T>;
+      orderBy?: OrderBy<T>;
       skip?: number;
       take?: number;
     }
-  ): Promise<M[K][]>;
+  ): Promise<T[]>;
 
-  create<K extends keyof M, CreateInput = M[K]>(
-    model: K,
+  create<T = any, CreateInput = T>(
+    collectionId: string,
     data: CreateInput[]
-  ): Promise<M[K][]>;
+  ): Promise<T[]>;
 
-  update<K extends keyof M>(
-    model: K,
-    where: WhereClause<M[K]>,
-    data: Partial<M[K]>
-  ): Promise<M[K]>;
+  update<T = any>(
+    collectionId: string,
+    where: WhereClause<T>,
+    data: Partial<T>
+  ): Promise<T>;
 
-  delete<K extends keyof M>(
-    model: K,
-    where: WhereClause<M[K]>
+  delete<T = any>(
+    collectionId: string,
+    where: WhereClause<T>
   ): Promise<void>;
 
-  upsert<K extends keyof M, CreateInput = M[K]>(
-    model: K,
+  upsert<T = any, CreateInput = T>(
+    collectionId: string,
     data: CreateInput
-  ): Promise<M[K]>;
+  ): Promise<T>;
 }
 
 type ModelsMap = {

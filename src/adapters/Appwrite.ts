@@ -4,15 +4,12 @@ import { WhereClause, OrderBy } from '../types';
 
 export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M> {
   private db: Databases;
-  private collections: Record<keyof M, string>;
 
   constructor(
     client: Client,
-    private databaseId: string,
-    collections: Record<keyof M, string>
+    private databaseId: string
   ) {
     this.db = new Databases(client);
-    this.collections = collections;
   }
 
   private toAppwriteQueries<T>(where: WhereClause<T> = {}): string[] {
@@ -36,21 +33,20 @@ export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M
     return queries;
   }
 
-  async findUnique<K extends keyof M>(model: K, where: WhereClause<M[K]>): Promise<M[K] | null> {
-    const list = await this.findMany(model, { where, take: 1 });
+  async findUnique<T = any>(collectionId: string, where: WhereClause<T>): Promise<T | null> {
+    const list = await this.findMany<T>(collectionId, { where, take: 1 });
     return list[0] ?? null;
   }
 
-  async findMany<K extends keyof M>(
-    model: K,
+  async findMany<T = any>(
+    collectionId: string,
     opts: {
-      where?: WhereClause<M[K]>;
-      orderBy?: OrderBy<M[K]>;
+      where?: WhereClause<T>;
+      orderBy?: OrderBy<T>;
       skip?: number;
       take?: number;
     } = {}
-  ): Promise<M[K][]> {
-    const collectionId = this.collections[model as string];
+  ): Promise<T[]> {
     const queries = this.toAppwriteQueries(opts.where);
 
     if (opts.orderBy) {
@@ -64,34 +60,30 @@ export class AppwriteAdapter<M extends Record<string, any>> implements Adapter<M
     if (opts.skip) queries.push(Query.offset(opts.skip));
 
     const res = await this.db.listDocuments(this.databaseId, collectionId, queries);
-    return res.documents as M[K][];
+    return res.documents as T[];
   }
 
-async create<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput[]): Promise<M[K][]> {
-    const collectionId = this.collections[model as string];
+  async create<T = any, CreateInput = T>(collectionId: string, data: CreateInput[]): Promise<T[]> {
     return Promise.all(
       data.map((entry: any) =>
         this.db.createDocument(this.databaseId, collectionId, entry['$id'] ? entry['$id'] : 'unique()', entry)
       )
-    ) as Promise<M[K][]>;
+    ) as Promise<T[]>;
   }
 
-  async update<K extends keyof M>(model: K, where: WhereClause<M[K]>, data: Partial<M[K]>): Promise<M[K]> {
-    const existing = await this.findUnique(model, where);
+  async update<T = any>(collectionId: string, where: WhereClause<T>, data: Partial<T>): Promise<T> {
+    const existing = await this.findUnique<T>(collectionId, where);
     if (!existing) throw new Error('Document not found');
-    const collectionId = this.collections[model as string];
-    return this.db.updateDocument(this.databaseId, collectionId, (existing as any).$id, data) as Promise<M[K]>;
+    return this.db.updateDocument(this.databaseId, collectionId, (existing as any).$id, data) as Promise<T>;
   }
 
-  async delete<K extends keyof M>(model: K, where: WhereClause<M[K]>): Promise<void> {
-    const existing = await this.findUnique(model, where);
+  async delete<T = any>(collectionId: string, where: WhereClause<T>): Promise<void> {
+    const existing = await this.findUnique<T>(collectionId, where);
     if (!existing) throw new Error('Document not found');
-    const collectionId = this.collections[model as string];
     await this.db.deleteDocument(this.databaseId, collectionId, (existing as any).$id);
   }
 
-  async upsert<K extends keyof M, CreateInput = M[K]>(model: K, data: CreateInput): Promise<M[K]> {
-    const collectionId = this.collections[model as string];
-    return this.db.upsertDocument(this.databaseId, collectionId, (data as any)['$id']? (data as any)['$id'] :'unique()', data as any)
+  async upsert<T = any, CreateInput = T>(collectionId: string, data: CreateInput): Promise<T> {
+    return this.db.upsertDocument(this.databaseId, collectionId, (data as any)['$id']? (data as any)['$id'] :'unique()', data as any) as T
   }
 }
